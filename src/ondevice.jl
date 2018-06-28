@@ -24,7 +24,7 @@ Dummy pointer type for inlining into structs that get uploaded to the GPU
 """
 struct HostPtr{T}
     ptr::Int32
-    (::Type{HostPtr{T}})() where T = new{T}(Int32(0))
+    HostPtr{T}() where T = new{T}(Int32(0))
 end
 eltype(::Type{HostPtr{T}}) where T = T
 const PreDeviceArray{T, N} = DeviceArray{T, N, HostPtr{T}} # Pointer free variant for kernel upload
@@ -95,7 +95,7 @@ function synchronize(x::CLArray)
 end
 
 
-immutable KernelState
+struct KernelState
     empty::Int32
     KernelState() = new(Int32(0))
 end
@@ -124,9 +124,9 @@ synchronize_threads(::KernelState) = cli.barrier(CLK_LOCAL_MEM_FENCE)
 
 LocalMemory(state::KernelState, ::Type{T}, ::Val{N}, ::Val{C}) where {T, N, C} = Transpiler.cli.LocalPointer{T}()
 
-function (::Type{AbstractDeviceArray})(ptr::PtrT, shape::Vararg{Integer, N}) where PtrT <: Transpiler.cli.LocalPointer{T} where {T, N}
+function AbstractDeviceArray(ptr::PtrT, shape::Vararg{Integer, N}) where PtrT <: Transpiler.cli.LocalPointer{T} where {T, N}
     DeviceArray{T, N, PtrT}(shape, ptr)
 end
-function (::Type{AbstractDeviceArray})(ptr::PtrT, shape::NTuple{N, Integer}) where PtrT <: Transpiler.cli.LocalPointer{T} where {T, N}
+function AbstractDeviceArray(ptr::PtrT, shape::NTuple{N, Integer}) where PtrT <: Transpiler.cli.LocalPointer{T} where {T, N}
     DeviceArray{T, N, PtrT}(shape, ptr)
 end

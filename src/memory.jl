@@ -8,18 +8,18 @@ import Base: pointer, eltype, cconvert, convert, unsafe_copy!
 using GPUArrays: supports_double, device, global_memory
 using GPUArrays
 
-immutable OwnedPtr{T}
+struct OwnedPtr{T}
     ptr::cl.CL_mem
     mapped::Bool
     context::cl.Context
 end
 pointer(p::OwnedPtr) = p.ptr
-eltype{T}(::Type{OwnedPtr{T}}) = T
+eltype(::Type{OwnedPtr{T}}) where {T} = T
 cconvert(::Type{cl.CL_mem}, p::OwnedPtr) = pointer(p)
 context(p::OwnedPtr) = p.context
 
 
-function convert{T}(::Type{OwnedPtr{T}}, p::OwnedPtr)
+function convert(::Type{OwnedPtr{T}}, p::OwnedPtr) where T
     OwnedPtr{T}(pointer(p), p.mapped, context(p))
 end
 
