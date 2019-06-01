@@ -15,7 +15,7 @@ end
 
 
 # arguments are swapped to not override default constructor
-function (::Type{CLArray{T, N}})(ptr::OwnedPtr{T}, size::NTuple{N, Integer}) where {T, N}
+function CLArray{T, N}(ptr::OwnedPtr{T}, size::NTuple{N, Integer}) where {T, N}
     arr = CLArray{T, N}(size, ptr)
     finalizer(arr, unsafe_free!)
     arr
@@ -36,7 +36,7 @@ module Shorthands
     export cl
 end
 
-function (::Type{CLArray{T, N}})(size::NTuple{N, Integer}, ctx::cl.Context = global_context()) where {T, N}
+function CLArray{T, N}(size::NTuple{N, Integer}, ctx::cl.Context = global_context()) where {T, N}
     # element type has different padding from cl type in julia
     # for fixedsize arrays we use vload/vstore, so we can use it packed
     clT = T #!Transpiler.is_fixedsize_array(T) ? cl.packed_convert(T) : T
@@ -71,10 +71,10 @@ function unsafe_reinterpret(::Type{T}, A::CLArray{ET}, size::NTuple{N, Integer})
     CLArray{T, N}(size, ptrt)
 end
 
-function copy!{T}(
+function copy!(
         dest::Array{T}, d_offset::Integer,
         source::CLArray{T}, s_offset::Integer, amount::Integer
-    )
+    ) where T
     amount == 0 && return dest
     s_offset = (s_offset - 1) * sizeof(T)
     q = global_queue(source)
@@ -83,10 +83,10 @@ function copy!{T}(
     dest
 end
 
-function copy!{T}(
+function copy!(
         dest::CLArray{T}, d_offset::Integer,
         source::Array{T}, s_offset::Integer, amount::Integer
-    )
+    ) where T
     amount == 0 && return dest
     q = global_queue(dest)
     d_offset = (d_offset - 1) * sizeof(T)
@@ -104,10 +104,10 @@ function copy!{T}(
 end
 
 
-function copy!{T}(
+function copy!(
         dest::CLArray{T}, d_offset::Integer,
         src::CLArray{T}, s_offset::Integer, amount::Integer
-    )
+    ) where T
     amount == 0 && return dest
     q = global_queue(src)
     d_offset = (d_offset - 1) * sizeof(T)

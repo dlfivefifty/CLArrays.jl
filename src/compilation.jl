@@ -19,13 +19,13 @@ function _gpu_call(f, A::CLArray, args::Tuple, blocks_threads::Tuple{T, T}) wher
 end
 
 
-device_type{T}(::T) = T
-device_type{T}(::Type{T}) = Type{T}
-device_type{T}(x::LocalMemory{T}) = cli.LocalPointer{T}
+device_type(::T) where {T} = T
+device_type(::Type{T}) where {T} = Type{T}
+device_type(x::LocalMemory{T}) where {T} = cli.LocalPointer{T}
 device_type(arg::Mem.OwnedPtr{T}) where T = cli.GlobalPointer{T}
 
-kernel_convert{T}(x::LocalMemory{T}) = cl.LocalMem(T, x.size)
-kernel_convert{T}(x::Mem.OwnedPtr{T}) = x
+kernel_convert(x::LocalMemory{T}) where {T} = cl.LocalMem(T, x.size)
+kernel_convert(x::Mem.OwnedPtr{T}) where {T} = x
 
 function kernel_convert(x::T) where T
     contains, fields = contains_pointer(T)
@@ -235,7 +235,7 @@ function empty_compile_cache!()
     return
 end
 
-immutable CLFunction{F, Args, Ptrs}
+struct CLFunction{F, Args, Ptrs}
     kernel::cl.Kernel
 end
 

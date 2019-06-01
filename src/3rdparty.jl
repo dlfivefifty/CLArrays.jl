@@ -22,9 +22,9 @@ import CLFFT
 #const plan_dict = Dict()
 import Base: *, plan_ifft!, plan_fft!, plan_fft, plan_ifft, size, plan_bfft, plan_bfft!
 
-immutable CLFFTPlan{Direction, Inplace, T, N} <: Base.FFTW.FFTWPlan{T, Direction, Inplace}
+struct CLFFTPlan{Direction, Inplace, T, N} <: Base.FFTW.FFTWPlan{T, Direction, Inplace}
     plan::CLFFT.Plan{T}
-    function (::Type{CLFFTPlan{Direction, Inplace}})(A::CLArray{T, N}) where {T, N, Direction, Inplace}
+    function CLFFTPlan{Direction, Inplace}(A::CLArray{T, N}) where {T, N, Direction, Inplace}
         ctx = global_context(A)
         p = CLFFT.Plan(T, ctx, size(A))
         CLFFT.set_layout!(p, :interleaved, :interleaved)
